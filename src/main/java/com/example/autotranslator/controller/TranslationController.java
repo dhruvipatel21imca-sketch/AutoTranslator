@@ -1,48 +1,54 @@
 package com.example.autotranslator.controller;
 
-import com.example.autotranslator.model.TranslationHistory;
-import com.example.autotranslator.repository.TranslationHistoryRepository;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @RestController
-@RequestMapping("/translator")
 public class TranslationController {
 
-    private final TranslationHistoryRepository repository;
+    private static final String LIBRE_TRANSLATE_URL = "https://libretranslate.com/translate";
 
-    public TranslationController(TranslationHistoryRepository repository) {
-        this.repository = repository;
-    }
+    @GetMapping("/api/translate")
+    public Map<String, String> translate(
+            @RequestParam String text,
+            @RequestParam String source,
+            @RequestParam String target) {
 
-    @GetMapping("/translate")
-    public String translate(@RequestParam String text,
-                            @RequestParam String targetLanguage) {
+        RestTemplate restTemplate = new RestTemplate();
 
-        try {
+        // Prepare request body
+        Map<String, Object> body = new HashMap<>();
+        body.put("q", text);
+        body.put("source", source);
+        body.put("target", target);
+        body.put("format", "text");
 
-            String url = "https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl="
-                    + targetLanguage + "&dt=t&q=" + text;
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
 
-            RestTemplate restTemplate = new RestTemplate();
-            String response = restTemplate.getForObject(url, String.class);
+        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
 
-            if (response == null) {
-                return "Translation failed";
-            }
+        // Send POST request
+        ResponseEntity<Map> response = restTemplate.postForEntity(LIBRE_TRANSLATE_URL, request, Map.class);
 
-            String translated = response.split("\"")[1];
+        // Extract translated text
+        String translatedText = response.getBody() != null ? (String) response.getBody().get("translatedText") : "";
 
-            TranslationHistory history =
-                    new TranslationHistory(text, translated, targetLanguage);
+        Map<String, String> result = new HashMap<>();
+        result.put("sourceText", text);
+        result.put("translatedText", translatedText);
+        result.put("sourceLanguage", source);
+        result.put("targetLanguage", target);
 
-            repository.save(history);
-
-            return translated;
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return "Error translating text";
-        }
+        return result;
     }
 }

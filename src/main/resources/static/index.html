@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="lang">
+<html lang="">
 <head>
     <meta charset="UTF-8">
     <title>Auto Translator AI</title>
@@ -83,10 +83,9 @@
     <p style="text-align:center;color:#666;">
         AI Voice Translator • Speech Support • 100+ Languages
     </p>
+    <label for="text"></label><textarea id="text" placeholder="Enter text..."></textarea>
 
-    <textarea id="text" placeholder="Enter text..."></textarea>
-
-    <select id="language">
+    <label for="language"></label><select id="language">
 
         <option value="hi">Hindi</option>
         <option value="en">English</option>
@@ -104,7 +103,6 @@
     <button onclick="translate()">Translate</button>
 
     <button class="mic" onclick="startSpeech()">🎤 Voice Input</button>
-
     <div class="result">
 
         <h3>Translated Text</h3>
@@ -120,16 +118,18 @@
 <script>
 
     function translate(){
-
+        fetch(`/translator/translate?text=${encodeURIComponent(text)}&targetLanguage=${lang}`, {
+            method: "GET"
+        })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("output").innerText = data;
+            });
         let text = document.getElementById("text").value;
         let lang = document.getElementById("language").value;
 
-        fetch("http://localhost:8080/translator/translate?text="
-            + encodeURIComponent(text) +
-            "&targetLanguage=" + lang)
-
+        fetch(`/translator/translate?text=${text}&targetLanguage=${lang}`)
             .then(response => response.text())
-
             .then(data => {
 
                 document.getElementById("output").innerText = data;
@@ -137,22 +137,19 @@
             });
 
     }
+
     function speak(){
 
         let text = document.getElementById("output").innerText;
 
-        if(!text || text === ""){
-            alert("Please translate first!");
-            return;
-        }
-
         let speech = new SpeechSynthesisUtterance(text);
 
-        speech.lang = document.getElementById("language").value;
+        speech.lang = "en";
 
         speechSynthesis.speak(speech);
 
     }
+
     function startSpeech(){
 
         let recognition=new webkitSpeechRecognition();
