@@ -15,7 +15,7 @@ import java.util.Map;
 @RestController
 public class TranslationController {
 
-    private static final String LIBRE_TRANSLATE_URL = "https://libretranslate.com/translate";
+    private static final String LIBRE_TRANSLATE_URL = "https://translate.argosopentech.com/translate";
 
     @GetMapping("/api/translate")
     public Map<String, String> translate(
@@ -23,31 +23,33 @@ public class TranslationController {
             @RequestParam String source,
             @RequestParam String target) {
 
-        RestTemplate restTemplate = new RestTemplate();
-
-        // Prepare request body
-        Map<String, Object> body = new HashMap<>();
-        body.put("q", text);
-        body.put("source", source);
-        body.put("target", target);
-        body.put("format", "text");
-
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
-
-        // Send POST request
-        ResponseEntity<Map> response = restTemplate.postForEntity(LIBRE_TRANSLATE_URL, request, Map.class);
-
-        // Extract translated text
-        String translatedText = response.getBody() != null ? (String) response.getBody().get("translatedText") : "";
-
         Map<String, String> result = new HashMap<>();
-        result.put("sourceText", text);
-        result.put("translatedText", translatedText);
-        result.put("sourceLanguage", source);
-        result.put("targetLanguage", target);
+
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+
+            Map<String, Object> body = new HashMap<>();
+            body.put("q", text);
+            body.put("source", source);
+            body.put("target", target);
+            body.put("format", "text");
+
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+
+            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+
+            ResponseEntity<Map> response =
+                    restTemplate.postForEntity(LIBRE_TRANSLATE_URL, request, Map.class);
+
+            String translatedText = response.getBody() != null
+                    ? (String) response.getBody().get("translatedText") : "";
+
+            result.put("translatedText", translatedText);
+
+        } catch (Exception e) {
+            result.put("translatedText", "Translation service unavailable");
+        }
 
         return result;
     }
