@@ -14,7 +14,7 @@ import java.util.Map;
 @RestController
 public class TranslationController {
 
-    private static final String LIBRE_TRANSLATE_URL = "https://translate.argosopentech.com/translate";
+    private static final String LIBRE_TRANSLATE_URL = "https://libretranslate.de/translate";
 
     // ✅ Homepage
     @GetMapping("/")
