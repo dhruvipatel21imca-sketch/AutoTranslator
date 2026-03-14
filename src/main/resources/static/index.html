@@ -118,21 +118,20 @@
 <script>
 
     function translate(){
-        fetch(`/translator/translate?text=${encodeURIComponent(text)}&targetLanguage=${lang}`, {
-            method: "GET"
-        })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("output").innerText = data;
-            });
+
         let text = document.getElementById("text").value;
         let lang = document.getElementById("language").value;
 
-        fetch(`/translator/translate?text=${text}&targetLanguage=${lang}`)
-            .then(response => response.text())
+        fetch(`/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
+            .then(response => response.json())
             .then(data => {
 
-                document.getElementById("output").innerText = data;
+                document.getElementById("output").innerText = data.translatedText;
+
+            })
+            .catch(error => {
+
+                document.getElementById("output").innerText = "Translation failed";
 
             });
 
@@ -170,3 +169,15 @@
 
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
