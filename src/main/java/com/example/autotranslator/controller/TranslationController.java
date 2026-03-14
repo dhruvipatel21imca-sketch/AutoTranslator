@@ -1,11 +1,7 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
-
 import org.springframework.web.client.RestTemplate;
 
 import java.util.HashMap;
@@ -16,13 +12,7 @@ public class TranslationController {
 
     private static final String LIBRE_TRANSLATE_URL = "https://libretranslate.de/translate";
 
-    // ✅ Homepage
-    @GetMapping("/")
-    public String home() {
-        return "AutoTranslator API is running";
-    }
-
-    // ✅ Translation API
+    // Translation API
     @GetMapping("/api/translate")
     public Map<String, String> translate(
             @RequestParam String text,
@@ -32,6 +22,7 @@ public class TranslationController {
         Map<String, String> result = new HashMap<>();
 
         try {
+
             RestTemplate restTemplate = new RestTemplate();
 
             Map<String, Object> body = new HashMap<>();
@@ -48,13 +39,19 @@ public class TranslationController {
             ResponseEntity<Map> response =
                     restTemplate.postForEntity(LIBRE_TRANSLATE_URL, request, Map.class);
 
-            String translatedText = response.getBody() != null
-                    ? (String) response.getBody().get("translatedText") : "";
+            String translatedText = "";
+
+            if (response.getBody() != null) {
+                translatedText = (String) response.getBody().get("translatedText");
+            }
 
             result.put("translatedText", translatedText);
 
         } catch (Exception e) {
+
+            e.printStackTrace();   // helps debug on Render
             result.put("translatedText", "Translation service unavailable");
+
         }
 
         return result;
