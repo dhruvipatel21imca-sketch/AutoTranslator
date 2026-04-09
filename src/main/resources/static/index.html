@@ -45,6 +45,8 @@
     </select>
 
     <button onclick="translate()">Translate</button>
+    <button onclick="startSpeech()">🎤 Voice Input</button>
+    <button onclick="speak()">🔊 Speak</button>
 
     <h3>Output:</h3>
     <p id="output"></p>
@@ -58,14 +60,36 @@
         let lang = document.getElementById("language").value;
 
         fetch(`/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
-            .then(response => response.json())
+            .then(res => res.json())
             .then(data => {
                 data.translatedText = undefined;
                 document.getElementById("output").innerText = data.translatedText;
             })
-            .catch(error => {
+            .catch(() => {
                 document.getElementById("output").innerText = "Error!";
             });
+    }
+
+    // 🔊 Speak
+    function speak(){
+        let text = document.getElementById("output").innerText;
+        let speech = new SpeechSynthesisUtterance(text);
+        speech.lang = "en";
+        speechSynthesis.speak(speech);
+    }
+
+
+    // 🎤 Voice Input
+    function startSpeech(){
+        let recognition = new webkitSpeechRecognition();
+        recognition.lang = "en-US";
+
+        recognition.onresult = function(event){
+            document.getElementById("text").value =
+                event.results[0][0].transcript;
+        };
+
+        recognition.start();
     }
 
 </script>

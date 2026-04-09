@@ -1,14 +1,17 @@
 package com.example.autotranslator.controller;
 
+import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
 import java.util.Map;
 
 @RestController
 public class TranslationController {
+
+    private static final String API_URL =
+            "https://api.mymemory.translated.net/get";
 
     @GetMapping("/api/translate")
     public Map<String, String> translate(
@@ -19,54 +22,27 @@ public class TranslationController {
         Map<String, String> result = new HashMap<>();
 
         try {
-
             RestTemplate restTemplate = new RestTemplate();
 
-            String url = "https://api.mymemory.translated.net/get?q="
-                    + java.net.URLEncoder.encode(text, java.nio.charset.StandardCharsets.UTF_8)
-                    + "&langpair=" + source + "|" + target;
+            String url = API_URL +
+                    "?q=" + text +
+                    "&langpair=" + source + "|" + target;
 
-            ResponseEntity<Map> response =
-                    restTemplate.getForEntity(url, Map.class);
+            Map response = restTemplate.getForObject(url, Map.class);
 
-            String translatedText = "Translation failed";
+            String translatedText = "";
 
-            // ✅ SAFE null checks
-            if (response.getBody() != null) {
-
-                Map body = response.getBody();
-
-                // First try main response
-                if (body.containsKey("responseData")) {
-                    Map responseData = (Map) body.get("responseData");
-
-                    if (responseData != null && responseData.get("translatedText") != null) {
-                        translatedText = responseData.get("translatedText").toString();
-                    }
-                }
-
-                // Backup: use matches
-                if (translatedText.equals("Translation failed") && body.containsKey("matches")) {
-
-                    java.util.List matches = (java.util.List) body.get("matches");
-
-                    if (matches != null && !matches.isEmpty()) {
-                        Map firstMatch = (Map) matches.get(0);
-
-                        if (firstMatch.get("translation") != null) {
-                            translatedText = firstMatch.get("translation").toString();
-                        }
-                    }
-                }
+            if (response != null && response.get("responseData") != null) {
+                Map data = (Map) response.get("responseData");
+                translatedText = (String) data.get("translatedText");
             }
 
             result.put("translatedText", translatedText);
 
         } catch (Exception e) {
-
-            result.put("translatedText", "Error translating");
-
+            result.put("translatedText", "Error occurred");
         }
 
         return result;
-    }}
+    }
+}
