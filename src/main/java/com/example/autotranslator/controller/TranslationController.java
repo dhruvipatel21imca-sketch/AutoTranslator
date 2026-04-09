@@ -23,23 +23,50 @@ public class TranslationController {
             RestTemplate restTemplate = new RestTemplate();
 
             String url = "https://api.mymemory.translated.net/get?q="
-                    + text + "&langpair=" + source + "|" + target;
+                    + java.net.URLEncoder.encode(text, java.nio.charset.StandardCharsets.UTF_8)
+                    + "&langpair=" + source + "|" + target;
 
             ResponseEntity<Map> response =
                     restTemplate.getForEntity(url, Map.class);
 
-            Map responseData = (Map) response.getBody().get("responseData");
+            String translatedText = "Translation failed";
 
-            String translatedText = (String) responseData.get("translatedText");
+            // ✅ SAFE null checks
+            if (response.getBody() != null) {
+
+                Map body = response.getBody();
+
+                // First try main response
+                if (body.containsKey("responseData")) {
+                    Map responseData = (Map) body.get("responseData");
+
+                    if (responseData != null && responseData.get("translatedText") != null) {
+                        translatedText = responseData.get("translatedText").toString();
+                    }
+                }
+
+                // Backup: use matches
+                if (translatedText.equals("Translation failed") && body.containsKey("matches")) {
+
+                    java.util.List matches = (java.util.List) body.get("matches");
+
+                    if (matches != null && !matches.isEmpty()) {
+                        Map firstMatch = (Map) matches.get(0);
+
+                        if (firstMatch.get("translation") != null) {
+                            translatedText = firstMatch.get("translation").toString();
+                        }
+                    }
+                }
+            }
 
             result.put("translatedText", translatedText);
 
         } catch (Exception e) {
 
-            result.put("translatedText", "Translation failed");
+            result.put("translatedText", "Error translating");
 
         }
 
         return result;
-    }
-}
+    }}
