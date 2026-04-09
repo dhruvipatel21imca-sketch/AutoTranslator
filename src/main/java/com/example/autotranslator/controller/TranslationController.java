@@ -1,9 +1,8 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -21,31 +20,23 @@ public class TranslationController {
 
         try {
 
-            String url = String.format(
-                    "https://translate.googleapis.com/translate_a/single?client=gtx&sl=%s&tl=%s&dt=t&q=%s",
-                    source,
-                    target,
-                    java.net.URLEncoder.encode(text, java.nio.charset.StandardCharsets.UTF_8)
-            );
-
             RestTemplate restTemplate = new RestTemplate();
-            String response = restTemplate.getForObject(url, String.class);
 
-            // ✅ SAFE check (prevents crash)
-            if (response != null && response.contains("\"")) {
+            String url = "https://api.mymemory.translated.net/get?q="
+                    + text + "&langpair=" + source + "|" + target;
 
-                String translated = response.split("\"")[1];
-                result.put("translatedText", translated);
+            ResponseEntity<Map> response =
+                    restTemplate.getForEntity(url, Map.class);
 
-            } else {
+            Map responseData = (Map) response.getBody().get("responseData");
 
-                result.put("translatedText", "Translation failed");
+            String translatedText = (String) responseData.get("translatedText");
 
-            }
+            result.put("translatedText", translatedText);
 
         } catch (Exception e) {
 
-            result.put("translatedText", "Error translating");
+            result.put("translatedText", "Translation failed");
 
         }
 
