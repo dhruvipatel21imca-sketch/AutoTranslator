@@ -1,8 +1,8 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +10,6 @@ import java.util.Map;
 @RestController
 public class TranslationController {
 
-    private static final String LIBRE_TRANSLATE_URL = "https://libretranslate.de/translate";
-
-    // Translation API
     @GetMapping("/api/translate")
     public Map<String, String> translate(
             @RequestParam String text,
@@ -25,35 +22,40 @@ public class TranslationController {
 
             RestTemplate restTemplate = new RestTemplate();
 
-            Map<String, Object> body = new HashMap<>();
-            body.put("q", text);
-            body.put("source", source);
-            body.put("target", target);
-            body.put("format", "text");
-
-            HttpHeaders headers = new HttpHeaders();
-            headers.setContentType(MediaType.APPLICATION_JSON);
-
-            HttpEntity<Map<String, Object>> request = new HttpEntity<>(body, headers);
+            String url = "https://api.mymemory.translated.net/get?q="
+                    + text + "&langpair=" + source + "|" + target;
 
             ResponseEntity<Map> response =
-                    restTemplate.postForEntity(LIBRE_TRANSLATE_URL, request, Map.class);
+                    restTemplate.getForEntity(url, Map.class);
+
+            Map body = response.getBody();
 
             String translatedText = "";
 
-            if (response.getBody() != null) {
-                translatedText = (String) response.getBody().get("translatedText");
+            // First try main response
+            if (body != null && body.get("responseData") != null) {
+                Map responseData = (Map) body.get("responseData");
+                translatedText = (String) responseData.get("translatedText");
+            }
+
+            // If empty → use matches (backup)
+            if (translatedText == null || translatedText.isEmpty()) {
+
+                if (body != null && body.get("matches") != null) {
+                    java.util.List matches = (java.util.List) body.get("matches");
+
+                    if (!matches.isEmpty()) {
+                        Map firstMatch = (Map) matches.get(0);
+                        translatedText = (String) firstMatch.get("translation");
+                    }
+                }
             }
 
             result.put("translatedText", translatedText);
 
         } catch (Exception e) {
-
-            e.printStackTrace();   // helps debug on Render
-            result.put("translatedText", "Translation service unavailable");
-
+            result.put("translatedText", "Translation failed");
         }
 
         return result;
-    }
-}
+    }}
