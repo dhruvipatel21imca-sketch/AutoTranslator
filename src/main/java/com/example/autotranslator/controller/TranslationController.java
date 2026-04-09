@@ -1,8 +1,9 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.http.ResponseEntity;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,42 +21,34 @@ public class TranslationController {
 
         try {
 
+            String url = String.format(
+                    "https://translate.googleapis.com/translate_a/single?client=gtx&sl=%s&tl=%s&dt=t&q=%s",
+                    source,
+                    target,
+                    java.net.URLEncoder.encode(text, java.nio.charset.StandardCharsets.UTF_8)
+            );
+
             RestTemplate restTemplate = new RestTemplate();
+            String response = restTemplate.getForObject(url, String.class);
 
-            String url = "https://api.mymemory.translated.net/get?q="
-                    + text + "&langpair=" + source + "|" + target;
+            // ✅ SAFE check (prevents crash)
+            if (response != null && response.contains("\"")) {
 
-            ResponseEntity<Map> response =
-                    restTemplate.getForEntity(url, Map.class);
+                String translated = response.split("\"")[1];
+                result.put("translatedText", translated);
 
-            Map body = response.getBody();
+            } else {
 
-            String translatedText = "";
+                result.put("translatedText", "Translation failed");
 
-            // First try main response
-            if (body != null && body.get("responseData") != null) {
-                Map responseData = (Map) body.get("responseData");
-                translatedText = (String) responseData.get("translatedText");
             }
-
-            // If empty → use matches (backup)
-            if (translatedText == null || translatedText.isEmpty()) {
-
-                if (body != null && body.get("matches") != null) {
-                    java.util.List matches = (java.util.List) body.get("matches");
-
-                    if (!matches.isEmpty()) {
-                        Map firstMatch = (Map) matches.get(0);
-                        translatedText = (String) firstMatch.get("translation");
-                    }
-                }
-            }
-
-            result.put("translatedText", translatedText);
 
         } catch (Exception e) {
-            result.put("translatedText", "Translation failed");
+
+            result.put("translatedText", "Error translating");
+
         }
 
         return result;
-    }}
+    }
+}
