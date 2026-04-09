@@ -10,6 +10,11 @@ import java.util.Map;
 @RestController
 public class TranslationController {
 
+    @GetMapping("/")
+    public String home() {
+        return "AutoTranslator is running 🚀";
+    }
+
     @GetMapping("/api/translate")
     public Map<String, String> translate(
             @RequestParam String text,
