@@ -1,8 +1,8 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.http.*;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,8 +10,10 @@ import java.util.Map;
 @RestController
 public class TranslationController {
 
-    private static final String API_URL =
-            "https://api.mymemory.translated.net/get";
+    @GetMapping("/")
+    public String home() {
+        return "Server is running";
+    }
 
     @GetMapping("/api/translate")
     public Map<String, String> translate(
@@ -22,25 +24,10 @@ public class TranslationController {
         Map<String, String> result = new HashMap<>();
 
         try {
-            RestTemplate restTemplate = new RestTemplate();
-
-            String url = API_URL +
-                    "?q=" + text +
-                    "&langpair=" + source + "|" + target;
-
-            Map response = restTemplate.getForObject(url, Map.class);
-
-            String translatedText = "";
-
-            if (response != null && response.get("responseData") != null) {
-                Map data = (Map) response.get("responseData");
-                translatedText = (String) data.get("translatedText");
-            }
-
-            result.put("translatedText", translatedText);
-
+            // Just return input for testing
+            result.put("translatedText", "OK: " + text);
         } catch (Exception e) {
-            result.put("translatedText", "Error occurred");
+            result.put("translatedText", "ERROR");
         }
 
         return result;
