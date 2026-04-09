@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html>
+<html lang="">
 <head>
     <meta charset="UTF-8">
     <title>Auto Translator</title>
 
     <style>
         body{
-            font-family: Arial;
+            font-family: Arial,emoji;
             background: linear-gradient(135deg,#4facfe,#00f2fe);
             display:flex;
             justify-content:center;
@@ -34,9 +34,9 @@
 <div class="container">
     <h2>🌍 Auto Translator</h2>
 
-    <textarea id="text" placeholder="Enter text"></textarea>
+    <label for="text"></label><textarea id="text" placeholder="Enter text"></textarea>
 
-    <select id="language">
+    <label for="language"></label><select id="language">
         <option value="hi">Hindi</option>
         <option value="gu">Gujarati</option>
         <option value="fr">French</option>
@@ -60,6 +60,7 @@
         fetch(`/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
             .then(response => response.json())
             .then(data => {
+                data.translatedText = undefined;
                 document.getElementById("output").innerText = data.translatedText;
             })
             .catch(error => {
