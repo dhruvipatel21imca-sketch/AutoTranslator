@@ -37,11 +37,13 @@
     <label for="text"></label><textarea id="text" placeholder="Enter text"></textarea>
 
     <label for="language"></label><select id="language">
-        <option value="hi">Hindi</option>
-        <option value="gu">Gujarati</option>
-        <option value="fr">French</option>
-        <option value="de">German</option>
-        <option value="ko">Korean</option>
+    <option value="hi">Hindi</option>
+    <option value="gu">Gujarati</option>
+    <option value="fr">French</option>
+    <option value="de">German</option>
+    <option value="ko">Korean</option>
+    <option value="zh">Chinese</option>
+    <option value="ar">Arabic</option>
     </select>
 
     <button onclick="translateText()">Translate</button>
@@ -102,12 +104,15 @@
 
         const speech = new SpeechSynthesisUtterance(text);
 
-        // Optional: language mapping
         let lang = document.getElementById("language").value;
 
-        if (lang === "Hindi") speech.lang = "hi-IN";
-        else if (lang === "Korean") speech.lang = "ko-KR";
-        else if (lang === "Chinese") speech.lang = "zh-CN";
+        if (lang === "hi") speech.lang = "hi-IN";
+        else if (lang === "gu") speech.lang = "gu-IN";
+        else if (lang === "ko") speech.lang = "ko-KR";
+        else if (lang === "zh") speech.lang = "zh-CN";
+        else if (lang === "ar") speech.lang = "ar-SA";
+        else if (lang === "fr") speech.lang = "fr-FR";
+        else if (lang === "de") speech.lang = "de-DE";
         else speech.lang = "en-US";
 
         window.speechSynthesis.speak(speech);
