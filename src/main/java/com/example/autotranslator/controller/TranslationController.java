@@ -9,11 +9,6 @@ import java.util.HashMap;
 public class TranslationController {
 
     @GetMapping("/translate")
-    public String translate(@RequestParam String text, @RequestParam String targetLanguage) {
-        return "Translated (" + targetLanguage + "): " + text;
-    }
-
-    @GetMapping("/translate")
     public Map<String, String> translate(@RequestParam String text,
                                          @RequestParam String targetLanguage) {
 
