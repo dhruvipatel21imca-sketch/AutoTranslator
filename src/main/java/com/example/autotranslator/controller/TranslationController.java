@@ -13,21 +13,17 @@ public class TranslationController {
         return "Translated (" + targetLanguage + "): " + text;
     }
 
-    @GetMapping("/api/translate")
-    public Map<String, String> translate(
-            @RequestParam String text,
-            @RequestParam String source,
-            @RequestParam String target) {
+    @GetMapping("/translate")
+    public Map<String, String> translate(@RequestParam String text,
+                                         @RequestParam String targetLanguage) {
 
-        Map<String, String> result = new HashMap<>();
+        Map<String, String> response = new HashMap<>();
 
-        try {
-            // Just return input for testing
-            result.put("translatedText", "OK: " + text);
-        } catch (Exception e) {
-            result.put("translatedText", "ERROR");
-        }
+        // Temporary translation (for testing)
+        String translated = "Translated to " + targetLanguage + ": " + text;
 
-        return result;
+        response.put("translatedText", translated);
+
+        return response;
     }
 }

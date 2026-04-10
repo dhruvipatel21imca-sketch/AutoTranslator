@@ -44,9 +44,9 @@
         <option value="ko">Korean</option>
     </select>
 
-    <button onclick="translate()">Translate</button>
-    <button onclick="startSpeech()">🎤 Voice Input</button>
-    <button onclick="speak(undefined)">🔊 Speak</button>
+    <button onclick="translateText()">Translate</button>
+    <button onclick="startVoice()">🎤 Voice Input</button>
+    <button onclick="speakText()">🔊 Speak</button>
 
     <h3>Output:</h3>
     <p id="output"></p>
@@ -60,8 +60,57 @@
         fetch(`/translator/translate?text=${text}&targetLanguage=${lang}`)
             .then(res => res.text())
             .then(data => {
-                document.getElementById("result").innerText = data;
+                document.getElementById("output").innerText = data;
+            })
+            .catch(err => {
+                document.getElementById("output").innerText = "Error: " + err;
             });
+    }
+
+    // 🎤 VOICE INPUT
+    function startVoice() {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!SpeechRecognition) {
+            alert("Voice not supported in this browser");
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = "en-US";  // you can change
+
+        recognition.start();
+
+        recognition.onresult = function(event) {
+            const speechText = event.results[0][0].transcript;
+            document.getElementById("text").value = speechText;
+        };
+
+        recognition.onerror = function(event) {
+            alert("Voice error: " + event.error);
+        };
+    }
+
+    // 🔊 SPEAK OUTPUT
+    function speakText() {
+        let text = document.getElementById("output").innerText;
+
+        if (!text) {
+            alert("No text to speak");
+            return;
+        }
+
+        const speech = new SpeechSynthesisUtterance(text);
+
+        // Optional: language mapping
+        let lang = document.getElementById("language").value;
+
+        if (lang === "Hindi") speech.lang = "hi-IN";
+        else if (lang === "Korean") speech.lang = "ko-KR";
+        else if (lang === "Chinese") speech.lang = "zh-CN";
+        else speech.lang = "en-US";
+
+        window.speechSynthesis.speak(speech);
     }
 </script>
 
