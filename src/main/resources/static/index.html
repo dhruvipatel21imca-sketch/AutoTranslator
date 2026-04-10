@@ -46,42 +46,45 @@
 
     <button onclick="translate()">Translate</button>
     <button onclick="startSpeech()">🎤 Voice Input</button>
-    <button onclick="speak()">🔊 Speak</button>
+    <button onclick="speak(undefined)">🔊 Speak</button>
 
     <h3>Output:</h3>
     <p id="output"></p>
 </div>
 
 <script>
-
-    function translate(){
+    function translate() {
 
         let text = document.getElementById("text").value;
         let lang = document.getElementById("language").value;
 
-        fetch(`/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
+        if(text === ""){
+            document.getElementById("output").innerText = "Enter text first";
+            return;
+        }
+
+        fetch(`https://autotranslator-1.onrender.com/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
             .then(res => res.json())
             .then(data => {
                 data.translatedText = undefined;
-                document.getElementById("output").innerText = data.translatedText;
+                document.getElementById("output").innerText = data.translatedText || "No result";
             })
-            .catch(() => {
-                document.getElementById("output").innerText = "Error!";
+            .catch(err => {
+                document.getElementById("output").innerText = "Error connecting server";
             });
     }
-
-    // 🔊 Speak
-    function speak(){
-        let text = document.getElementById("output").innerText;
-        let speech = new SpeechSynthesisUtterance(text);
-        speech.lang = "en";
-        speechSynthesis.speak(speech);
-    }
-
-
-    // 🎤 Voice Input
     function startSpeech(){
-        let recognition = new webkitSpeechRecognition();
+
+        const speechRecognition =
+            window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (!speechRecognition) {
+            alert("Speech Recognition not supported");
+            return;
+        }
+
+        const recognition = new speechRecognition();
+
         recognition.lang = "en-US";
 
         recognition.onresult = function(event){
@@ -91,7 +94,6 @@
 
         recognition.start();
     }
-
 </script>
 
 </body>
