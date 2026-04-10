@@ -1,14 +1,17 @@
 package com.example.autotranslator.controller;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.util.HashMap;
+import org.springframework.web.bind.annotation.*;
 import java.util.Map;
+import java.util.HashMap;
 
 @RestController
+@RequestMapping("/translator")
 public class TranslationController {
+
+    @GetMapping("/translate")
+    public String translate(@RequestParam String text, @RequestParam String targetLanguage) {
+        return "Translated (" + targetLanguage + "): " + text;
+    }
 
     @GetMapping("/api/translate")
     public Map<String, String> translate(

@@ -53,46 +53,15 @@
 </div>
 
 <script>
-    function translate() {
-
+    function translateText() {
         let text = document.getElementById("text").value;
         let lang = document.getElementById("language").value;
 
-        if(text === ""){
-            document.getElementById("output").innerText = "Enter text first";
-            return;
-        }
-
-        fetch(`https://autotranslator-1.onrender.com/api/translate?text=${encodeURIComponent(text)}&source=en&target=${lang}`)
-            .then(res => res.json())
+        fetch(`/translator/translate?text=${text}&targetLanguage=${lang}`)
+            .then(res => res.text())
             .then(data => {
-                data.translatedText = undefined;
-                document.getElementById("output").innerText = data.translatedText || "No result";
-            })
-            .catch(err => {
-                document.getElementById("output").innerText = "Error connecting server";
+                document.getElementById("result").innerText = data;
             });
-    }
-    function startSpeech(){
-
-        const speechRecognition =
-            window.SpeechRecognition || window.webkitSpeechRecognition;
-
-        if (!speechRecognition) {
-            alert("Speech Recognition not supported");
-            return;
-        }
-
-        const recognition = new speechRecognition();
-
-        recognition.lang = "en-US";
-
-        recognition.onresult = function(event){
-            document.getElementById("text").value =
-                event.results[0][0].transcript;
-        };
-
-        recognition.start();
     }
 </script>
 
